@@ -109,7 +109,10 @@ NEARDATA struct obj *uwep, *uarm, *uswapwep,
     *uarmc, *uarmh, *uarms, *uarmg,*uarmf, *uamul,
     *uright, *uleft, *ublindf, *uchain, *uball;
 const char vowels[] = "aeiouAEIOU";
-NEARDATA winid WIN_MESSAGE, WIN_STATUS, WIN_MAP, WIN_INVEN;
+/* Migrated 2026-05-06: WIN_* globals consolidated into g_win.
+ * Initial values come from win_init() in src/windows.c (search for
+ * WIN_MAP = WIN_ERR; just below this declaration). */
+struct win_globals g_win;
 const char ynchars[] = "yn";
 const char ynqchars[] = "ynq";
 const char ynaqchars[] = "ynaq";

@@ -51,7 +51,7 @@ extern void init_linux_cons(void);
 
 static void wd_message(void);
 static struct passwd *get_unix_pw(void);
-/* ATTRNORETURN static void opt_terminate(void) NORETURN; */
+ATTRNORETURN static void opt_terminate(void) NORETURN;
 
 #ifdef __EMSCRIPTEN__
 /* if WebAssembly, export this API and don't optimize it out */
@@ -769,8 +769,6 @@ sys_random_seed(void)
     return seed;
 }
 
-#if 0
-/* now found in earlyarg.c */
 /* for command-line options that perform some immediate action and then
    terminate the program without starting play, like 'nethack --version'
    or 'nethack -s Zelda'; do some cleanup before that termination */
@@ -782,6 +780,7 @@ opt_terminate(void)
     nh_terminate(EXIT_SUCCESS);
     /*NOTREACHED*/
 }
+
 /* show the sysconf file name, playground directory, run-time configuration
    file name, dumplog file name if applicable, and some other things */
 ATTRNORETURN void
@@ -794,49 +793,6 @@ after_opt_showpaths(const char *dir)
 #endif
     opt_terminate();
     /*NOTREACHED*/
-}
-#endif
-
-void
-get_nhuuid(void)
-{
-    unsigned char stmp[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-    char *uuid = (char *) &stmp[0];
-#ifndef NONHUUID
-#ifdef NHUUID
-    int uuid_available = 0;
-#endif
-#endif
-
-    if (svn.nhuuid[0])
-        return;
-
-#ifndef NONHUUID
-#ifdef NHUUID
-    uuid_available = emscripten_run_script_int(
-		    "typeof crypto !== 'undefined'"
-		    " && typeof crypto.randomUUID === 'function'");
-    if (uuid_available) {
-        uuid = emscripten_run_script_string("crypto.randomUUID()");
-        if (!uuid) {
-            uuid = (char *) &stmp[0];
-        }
-    }
-#endif  /* NHUUID */
-#endif  /* NONHUUID */
-    Snprintf(svn.nhuuid, sizeof svn.nhuuid, "%s", uuid);
-}
-
-void
-free_nhuuid(void)
-{
-    int i;
-
-    for (i = 0; i < SIZE(svn.nhuuid); i++) {
-        svn.nhuuid[i] = 0;
-    }
 }
 
 #ifdef __EMSCRIPTEN__
@@ -1285,6 +1241,25 @@ void js_globals_init() {
     CREATE_GLOBAL(flags.initalign, "i");
     CREATE_GLOBAL(flags.showexp, "b");
     CREATE_GLOBAL(flags.time, "b");
+
+    /* Frontend cinematic / overlay support (added 2026-05).
+     * The frontend reads these for FOV overlays, HP heartbeat trigger,
+     * level-transition audio crossfades, and zoom-on-event detection.
+     * STRICT NO-MUTATE CONTRACT — JS must never assign to these.
+     * The CREATE_GLOBAL macro produces read/write properties for
+     * uniformity, but the frontend treats them as read-only by
+     * convention. If we ever want runtime enforcement, we'd extend
+     * create_global with an immutable variant. */
+    CREATE_GLOBAL(u.uhp,     "i");   /* current HP */
+    CREATE_GLOBAL(u.uhpmax,  "i");   /* max HP */
+    CREATE_GLOBAL(u.uen,     "i");   /* current power */
+    CREATE_GLOBAL(u.uenmax,  "i");   /* max power */
+    CREATE_GLOBAL(u.ulevel,  "i");   /* experience level */
+    CREATE_GLOBAL(u.uhunger, "i");   /* hunger food counter */
+    CREATE_GLOBAL(u.uz.dnum,    "i"); /* dungeon branch number */
+    CREATE_GLOBAL(u.uz.dlevel,  "i"); /* depth on the current branch */
+    CREATE_GLOBAL(u.ux,      "i");   /* player cell X */
+    CREATE_GLOBAL(u.uy,      "i");   /* player cell Y */
 }
 
 EM_JS(void, create_global, (char *name_str, void *ptr, char *type_str), {

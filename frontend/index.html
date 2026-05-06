@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ModMyNetHack</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0c0c10;
+        --fg: #d8d8d8;
+        --accent: #ffaa33;
+      }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        height: 100%;
+        overflow: hidden;
+      }
+      #app {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        height: 100vh;
+        width: 100vw;
+      }
+      #message-window {
+        padding: 4px 8px;
+        min-height: 1.4em;
+        border-bottom: 1px solid #222;
+        white-space: pre-wrap;
+      }
+      #map-container {
+        position: relative;
+        overflow: hidden;
+      }
+      #map {
+        display: block;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        background: #000;
+      }
+      #status-window {
+        padding: 4px 8px;
+        border-top: 1px solid #222;
+        min-height: 2.6em;
+        white-space: pre-wrap;
+      }
+      #boot-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(12, 12, 16, 0.92);
+        z-index: 10;
+      }
+      #boot-overlay.hidden { display: none; }
+      .boot-message { color: var(--accent); font-size: 1.1em; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="message-window" aria-label="messages"></div>
+      <div id="map-container">
+        <canvas id="map" width="800" height="500"></canvas>
+        <div id="boot-overlay">
+          <div class="boot-message" id="boot-message">Loading NetHack&hellip;</div>
+        </div>
+      </div>
+      <div id="status-window" aria-label="status"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

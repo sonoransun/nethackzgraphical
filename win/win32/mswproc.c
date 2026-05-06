@@ -2889,7 +2889,7 @@ static mswin_condition_field _condition_fields[CONDITION_COUNT] = {
     { BL_MASK_HOLDING,   "Uhold", 0 },
 };
 
-extern winid WIN_STATUS;
+/* WIN_STATUS now provided by include/g_win.h via decl.h. */
 
 #ifdef STATUS_HILITES
 typedef struct hilite_data_struct {

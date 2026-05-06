@@ -1,0 +1,17 @@
+# Open inventory, look at self, quit.
+# Verifies: menu display path, look command, clean exit.
+
+line LookTester
+ans y
+
+require_glyphs 1
+
+key i
+keynum 27
+
+key :
+key #
+line quit
+ans y
+ans n
+ans y

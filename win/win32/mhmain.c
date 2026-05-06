@@ -21,7 +21,7 @@ typedef struct mswin_nethack_main_window {
     int mapAcsiiModeSave;
 } NHMainWindow, *PNHMainWindow;
 
-extern winid WIN_STATUS;
+/* WIN_STATUS now provided by include/g_win.h via decl.h. */
 
 static TCHAR szMainWindowClass[] = TEXT("MSNHMainWndClass");
 static TCHAR szTitle[MAX_LOADSTRING];

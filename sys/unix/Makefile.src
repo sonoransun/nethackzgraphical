@@ -533,10 +533,10 @@ HACKCSRC = allmain.c alloc.c apply.c artifact.c attrib.c ball.c bones.c \
 	   uhitm.c vault.c version.c vision.c weapon.c were.c wield.c \
 	   windows.c wizard.c wizcmds.c worm.c worn.c write.c zap.c
 
-# all operating-system-dependent .c (for dependencies and such)
-SYSCSRC = ../sys/share/pcmain.c ../sys/share/pcsys.c \
-	../sys/share/pctty.c ../sys/share/pcunix.c \
-	../sys/share/pmatchregex.c ../sys/share/posixregex.c \
+# all operating-system-dependent .c (for dependencies and such).
+# pcmain/pcsys/pctty/pcunix/pmatchregex removed 2026-05-06 with the
+# dead-platform sweep. POSIX regex on Unix, C++11 regex on Windows.
+SYSCSRC = ../sys/share/posixregex.c \
 	../sys/share/random.c \
 	../sys/share/ioctl.c ../sys/share/unixtty.c ../sys/unix/unixmain.c \
 	../sys/unix/unixunix.c ../sys/unix/unixres.c
@@ -572,13 +572,13 @@ HACKINCL = align.h artifact.h artilist.h attrib.h botl.h \
 	defsym.h display.h dlb.h dungeon.h engrave.h extern.h flag.h \
 	fnamesiz.h func_tab.h global.h warnings.h hack.h lint.h mextra.h \
 	mcastu.h \
-	micro.h mfndpos.h mkroom.h monattk.h mondata.h monflag.h monst.h \
+	mfndpos.h mkroom.h monattk.h mondata.h monflag.h monst.h \
 	monsters.h nhmd4.h obj.h objects.h objclass.h optlist.h patchlevel.h \
-	pcconf.h permonst.h prop.h rect.h region.h savefile.h selvar.h sym.h \
+	permonst.h prop.h rect.h region.h savefile.h selvar.h sym.h \
 	rm.h sp_lev.h spell.h sndprocs.h seffects.h stairs.h sys.h \
-	tcap.h timeout.h tradstdc.h trap.h unixconf.h vision.h vmsconf.h \
+	tcap.h timeout.h tradstdc.h trap.h unixconf.h vision.h \
 	wintty.h wincurs.h winX.h winprocs.h wintype.h you.h youprop.h \
-	weight.h
+	weight.h g_win.h
 
 HSOURCES = $(HACKINCL) dgn_file.h
 
@@ -886,10 +886,10 @@ depend2:	$(WINQTMOC)
 # config.h timestamp
 $(CONFIG_H): ../include/color.h ../include/config.h ../include/config1.h \
 		../include/coord.h ../include/cstd.h ../include/fnamesiz.h \
-		../include/global.h ../include/integer.h ../include/micro.h \
-		../include/patchlevel.h ../include/pcconf.h \
+		../include/global.h ../include/integer.h \
+		../include/patchlevel.h \
 		../include/tradstdc.h ../include/unixconf.h \
-		../include/vmsconf.h ../include/warnings.h \
+		../include/warnings.h \
 		../include/windconf.h
 	touch $(CONFIG_H)
 # hack.h timestamp
@@ -925,8 +925,7 @@ $(TARGETPFX)pctty.o: ../sys/share/pctty.c $(HACK_H) ../include/wintty.h
 	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ ../sys/share/pctty.c
 $(TARGETPFX)pcunix.o: ../sys/share/pcunix.c $(HACK_H) ../include/wintty.h
 	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ ../sys/share/pcunix.c
-$(TARGETPFX)pmatchregex.o: ../sys/share/pmatchregex.c $(HACK_H)
-	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ ../sys/share/pmatchregex.c
+# pmatchregex.o build rule removed 2026-05-06 — pmatch fallback retired.
 $(TARGETPFX)posixregex.o: ../sys/share/posixregex.c $(HACK_H)
 	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ ../sys/share/posixregex.c
 $(TARGETPFX)random.o: ../sys/share/random.c $(HACK_H)

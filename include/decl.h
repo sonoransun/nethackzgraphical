@@ -70,14 +70,12 @@ extern const char hexdd[33];
 /* material strings */
 extern const char *materialnm[];
 
-/* current mon class symbols */
-extern uchar monsyms[MAXMCLASSES];
-
-/* current object class symbols */
-extern uchar oc_syms[MAXOCLASSES];
-
+/* monsyms[]/oc_syms[] removed 2026-05-06: vestigial externs with no
+ * matching definitions. The active per-game symbol tables live in
+ * gs.showsyms / gp.primary_syms / gr.rogue_syms (see src/symbols.c). */
+/* tune[] removed 2026-05-06: replaced by svt.tune[] long ago (see
+ * src/dungeon.c, src/music.c). */
 extern const char quitchars[];
-extern NEARDATA char tune[6];
 extern const schar xdir[], ydir[], zdir[], dirs_ord[];
 extern const char vowels[];
 extern const char ynchars[];
@@ -100,16 +98,20 @@ extern NEARDATA struct you u;
 extern NEARDATA time_t ubirthday;
 extern NEARDATA struct u_realtime urealtime;
 
-/* Window system stuff */
-extern NEARDATA winid WIN_MESSAGE;
-extern NEARDATA winid WIN_STATUS;
-extern NEARDATA winid WIN_MAP, WIN_INVEN;
+/* Window system stuff. WIN_MESSAGE/STATUS/MAP/INVEN now live in
+ * struct win_globals g_win — see include/g_win.h. The shims defined
+ * there make existing references continue to work unchanged. */
+#include "g_win.h"
 
 #ifndef TCAP_H
-extern struct tc_gbl_data {   /* also declared in tcap.h */
+/* tc_gbl_data type is defined here (also in tcap.h). The standalone
+ * `tc_gbl_data` extern was removed 2026-05-06 as vestigial — the active
+ * instance is gt.tc_gbl_data (member of the existing instance_globals_t
+ * struct), accessed via the AS/AE/LI/CO macros below. */
+struct tc_gbl_data {
     char *tc_AS, *tc_AE; /* graphics start and end (tty font swapping) */
     int tc_LI, tc_CO;    /* lines and columns */
-} tc_gbl_data;
+};
 #define AS gt.tc_gbl_data.tc_AS
 #define AE gt.tc_gbl_data.tc_AE
 #define LI gt.tc_gbl_data.tc_LI

@@ -156,16 +156,11 @@ typedef uchar nhsym;
  * Please don't change the order.  It does matter.
  */
 
-#ifdef VMS
-#include "vmsconf.h"
-#endif
+/* VMS, MSDOS, AMIGA includes removed 2026-05-06 with the dead-platform
+ * sweep. See DEVEL/MODERNIZATION.md. */
 
 #ifdef UNIX
 #include "unixconf.h"
-#endif
-
-#ifdef MSDOS
-#include "pcconf.h"
 #endif
 
 #ifdef WIN32
@@ -173,12 +168,6 @@ typedef uchar nhsym;
 #endif
 
 #include "warnings.h"
-
-/* amiconf.h needs to be the last nested #include of config.h because
-   'make depend' will turn it into a comment, hiding anything after it */
-#ifdef AMIGA
-#include "amiconf.h"
-#endif
 
 /* Displayable name of this port; don't redefine if defined in *conf.h */
 #ifndef PORT_ID

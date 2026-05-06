@@ -219,8 +219,6 @@ _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);*/
     //       windowtype = gc.chosen_windowtype;
     //   windowtype = gc.chosen_windowtype;
 
-    program_state.early_options = 1;
-
 #if !defined(MSWIN_GRAPHICS)
     nethack_enter_consoletty();
     consoletty_open(1);
@@ -256,10 +254,12 @@ _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);*/
                    * which clears out gp.fqn_prefix[] */
     // iflags.windowtype_deferred = TRUE;
 
+    program_state.early_options = 1;
     /* if (GUILaunched || IsDebuggerPresent()) */
     early_options(&argc, &argv, &dir);
-
     program_state.early_options = 0;
+
+
     initoptions();
 #if defined(CHDIR) && !defined(NOCWD_ASSUMPTIONS)
     chdir(gf.fqn_prefix[HACKPREFIX]);

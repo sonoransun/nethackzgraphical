@@ -766,8 +766,6 @@ getret(void)
 #if defined(MICRO) || defined(WIN32CON)
     getreturn("to continue");
 #else
-    if (!isatty(STDIN_FILENO) || program_state.early_options)
-        return;
     HUPSKIP();
     xputs("\n");
     if (flags.standout)
@@ -4257,7 +4255,7 @@ tty_putmixed(winid window, int attr, const char *str)
 extern const char *status_fieldfmt[MAXBLSTATS];
 extern char *status_vals[MAXBLSTATS];
 extern boolean status_activefields[MAXBLSTATS];
-extern winid WIN_STATUS;
+/* WIN_STATUS now provided by include/g_win.h via decl.h — no need to redeclare. */
 
 #ifdef STATUS_HILITES
 static int condcolor(long, unsigned long *);

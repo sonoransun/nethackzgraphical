@@ -161,7 +161,7 @@ save_dungeon(
             Sfo_dungeon(nhfp, &svd.dungeons[i], "dungeon");
         }
         Sfo_dgn_topology(nhfp, &svd.dungeon_topology, "svd.dungeon_topology");
-        Sfo_char(nhfp, svt.tune, "tune", (int) sizeof tune);
+        Sfo_char(nhfp, svt.tune, "tune", (int) sizeof svt.tune);
         for (count = 0, curr = svb.branches; curr; curr = curr->next)
             count++;
         Sfo_int(nhfp, &count, "branch_count");
@@ -220,7 +220,7 @@ restore_dungeon(NHFILE *nhfp)
         Sfi_dungeon(nhfp, &svd.dungeons[i], "dungeon");
     }
     Sfi_dgn_topology(nhfp, &svd.dungeon_topology, "svd.dungeon_topology");
-    Sfi_char(nhfp, svt.tune, "tune", (int) sizeof tune);
+    Sfi_char(nhfp, svt.tune, "tune", (int) sizeof svt.tune);
 
     last = svb.branches = (branch *) 0;
 

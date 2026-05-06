@@ -1,0 +1,89 @@
+# NetHack 5.0  wasm.500
+# Copyright (c) 2026 by ModMyNetHack maintainers
+# NetHack may be freely redistributed.  See license for details.
+#
+#-------------------------------------------------------------------
+# Hints file for cross-compiling NetHack to WebAssembly via Emscripten.
+#
+# Produces  targets/wasm/nethack.js  +  targets/wasm/nethack.wasm
+# bundled with the data files (dlb, sysconf, etc.) embedded in the
+# Emscripten virtual filesystem.
+#
+# The actual WASM compile rules already live in
+#   sys/unix/hints/include/cross-pre1.500   (TARGETDIR + pinning)
+#   sys/unix/hints/include/cross-pre2.500   (EMCC flags, source set)
+#   sys/unix/hints/include/cross-post.500   (link rule, embed-file)
+# This file just turns them on.
+#
+# Prerequisites:
+#   - emscripten >= 3.1 (provides emcc, emar, emranlib).
+#         Activate with `source /path/to/emsdk/emsdk_env.sh`
+#   - the Lua source (`make fetch-Lua` in the top dir, one-time).
+#
+# Usage:
+#     cd sys/unix
+#     sh setup.sh hints/wasm.500
+#     cd ../..
+#     make fetch-Lua          # one-time
+#     make wasm
+#
+# The frontend/ TypeScript app consumes the resulting .js/.wasm pair.
+#-------------------------------------------------------------------
+
+#-PRE
+# CROSS_TO_WASM=1 is the master switch; cross-pre1/pre2 keys off it.
+CROSS_TO_WASM = 1
+
+#-INCLUDE cross-pre1.500
+
+HINTSVERSION := 500
+
+ifdef MAKEFILE_TOP
+ifeq ($(MAKELEVEL),0)
+PRECHECK += checkmakefiles
+HINTSINCLNAMES := cross-pre1 cross-pre2 cross-post
+HINTSINCLFILES := $(addsuffix .$(HINTSVERSION), $(HINTSINCLNAMES))
+endif
+endif
+
+# Compiler is forced to emcc by cross-pre2.500; CC here is just the
+# host-side compiler used for makedefs and other host tools.
+CC ?= cc
+LINK = $(CC)
+
+# DLB is required: the WASM build embeds a single nhdat blob into the
+# virtual filesystem (see cross-post.500:160-169).
+override DLB = 1
+
+# No tty/curses/x11/qt — the WASM build is shim-only.
+# (cross-pre2.500 sets DEFAULT_WINDOW_SYS="shim" and -DNOTTYGRAPHICS.)
+WANT_WIN_TTY    =
+WANT_WIN_CURSES =
+WANT_WIN_X11    =
+WANT_WIN_QT     =
+
+# Permissions live inside the embedded virtual filesystem; the values
+# don't matter at runtime but Makefile.top references them.
+GAMEPERM    = 0755
+FILEPERM    = 0644
+EXEPERM     = 0755
+DIRPERM     = 0755
+VARDIRPERM  = 0755
+VARFILEPERM = 0644
+CHOWN = true
+CHGRP = true
+
+#-INCLUDE cross-pre2.500
+
+#-POST
+
+#-INCLUDE cross-post.500
+
+ifdef MAKEFILE_TOP
+ifeq ($(MAKELEVEL),0)
+.PHONY: checkmakefiles
+checkmakefiles:
+	@$(MAKE) -f sys/unix/Makefile.check \
+		HINTSFILE="$(HINTSFILE)" HINTSINCLFILES="$(HINTSINCLFILES)"
+endif
+endif

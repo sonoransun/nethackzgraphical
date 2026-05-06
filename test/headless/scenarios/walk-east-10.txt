@@ -1,0 +1,32 @@
+# Walk east 10 times, then quit.
+# This exercises: engine init, character creation defaults, map
+# rendering, movement input → render loop, clean shutdown.
+
+# First the engine asks for a name (getlin); fall through with default.
+line Tester
+
+# Player selection — accept whatever the engine offers as default.
+ans y
+
+require_glyphs 1
+
+# 10 east steps
+key l
+key l
+key l
+key l
+key l
+key l
+key l
+key l
+key l
+key l
+
+require_glyphs 11
+
+# Quit and confirm
+key #
+line quit
+ans y
+ans n
+ans y
