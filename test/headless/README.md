@@ -5,6 +5,28 @@ the sequence of window-proc calls the engine makes. The keystone of the
 modernization plan's regression net: catches breakages in seconds in CI,
 far cheaper than a full Puppeteer run.
 
+## How it works
+
+```mermaid
+flowchart LR
+  scen[scenarios/walk-east-10.txt<br>key l, key l, …<br>require_glyphs 11<br>expect 'You see here']
+  scen -->|fed line by line| drive[test/headless/drive.c<br>main loop + cb]
+  drive -->|registers C callback via| reg[shim_graphics_set_callback]
+  reg --> shim["win/shim/winshim.c<br>(native, no Asyncify)"]
+  drive -->|invokes| nhmain["nhmain(argc, argv)"]
+  nhmain --> moveloop[engine moveloop<br>blocks until exit]
+  moveloop -->|each window-proc call| shim
+  shim -->|forwards to| cb[drive's C callback<br>tally + scripted reply]
+  cb -->|on shim_nhgetch| nextkey[pop next directive<br>from scenario]
+  cb -->|on shim_putstr| accum[accumulate into recent_msgs<br>for expect matches]
+  nextkey -->|return key code| shim
+  shim --> moveloop
+  moveloop -->|exit| drive
+  drive -->|exit code 0/1| ci[CI gate]
+```
+
+The harness is a small C program — ~250 lines — that links against `libnh.a`, registers a callback with `shim_graphics_set_callback`, and replays scenario directives in lock-step with the engine's `shim_nhgetch` / `shim_yn_function` / `shim_getlin` calls. When `expect` and `require_glyphs` directives don't match observed engine output, the harness exits non-zero and CI fails fast.
+
 ## How it builds
 
 The harness links against `src/libnh.a` (built with `WANT_LIBNH=1` per

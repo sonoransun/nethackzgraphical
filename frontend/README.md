@@ -10,38 +10,37 @@ for the full four-phase plan.
 
 ## Architecture
 
+```mermaid
+flowchart TB
+  subgraph Engine["Engine (WASM blob loaded as ES module)"]
+    direction TB
+    moveloop[allmain.c moveloop]
+    moveloop --> wp["windowprocs.win_*<br>vtable, src/windows.c"]
+    wp --> shim["win/shim/winshim.c<br>DECLCB / VDECLCB"]
+    shim --> emjs["EM_JS local_callback<br>winshim.c:264-322"]
+    setcb["_shim_graphics_set_callback<br>JS → C registration"]
+  end
+
+  emjs -->|Asyncify suspends C stack| boundary[(JS / WASM boundary)]
+  boundary --> dispatch[globalThis.nethackCallback<br>= dispatch in shim/dispatcher.ts]
+  dispatch --> handlers[handlers/window-procs.ts<br>switch on shim_* name]
+  handlers --> map[render/webgl2.ts<br>MapRenderer]
+  handlers --> menu[ui/menu.ts<br>MenuController]
+  handlers --> hud[ui/status-hud.ts<br>StatusHUD]
+  handlers --> prompt[ui/prompts.ts<br>PromptController]
+  handlers --> sound[audio/soundscape.ts]
+  handlers --> input[input/keyboard.ts<br>InputQueue]
+
+  map --> pp[render/postprocess.ts<br>PostProcessPipeline]
+  pp --> screen[(screen)]
+  input -. async key/click resolves<br>shim_nhgetch / shim_nh_poskey .-> handlers
+  handlers -. ret_ptr written + Promise resolves .-> boundary
+  boundary -->|wakeUp| emjs
+
+  setcb -. one-time at boot<br>(main.ts) .-> dispatch
 ```
-                            ┌─────────────────────────┐
-                            │  TypeScript frontend    │
-                            │                         │
-                            │  ┌───────────────────┐  │
-                            │  │  dispatcher.ts    │◀─┼─── globalThis.nethackCallback
-                            │  │  (handler table)  │  │
-                            │  └───────┬───────────┘  │
-                            │          │              │
-                            │  ┌───────▼───────────┐  │
-                            │  │ window-procs.ts   │  │   shim_print_glyph,
-                            │  │ (handlers)        │  │   shim_nhgetch, …
-                            │  └───┬───────────┬───┘  │
-                            │      │           │      │
-                            │  ┌───▼───┐  ┌────▼───┐  │
-                            │  │ map   │  │ input  │  │
-                            │  │ (C2D) │  │ queue  │  │
-                            │  └───────┘  └────────┘  │
-                            └─────────────────────────┘
-                                         ▲
-                                         │  Asyncify-suspended
-                                         │  callbacks
-┌────────────────────┐    ┌───────────────┴──────────────┐
-│ /wasm/nethack.{js, │───▶│   win/shim/winshim.c          │
-│   wasm, data}      │    │   (DECLCB / VDECLCB macros)   │
-│                    │    │                               │
-│  EM_JS local_      │    │   shim_graphics_set_callback  │
-│  callback at       │    │                               │
-│  winshim.c:264     │    │   ↑ wired to vtable as        │
-└────────────────────┘    │     wp_shim in window_procs   │
-                          └───────────────────────────────┘
-```
+
+The engine doesn't know JavaScript exists. It calls `windowprocs.win_print_glyph(...)`, the vtable dispatches to `shim_print_glyph` in `winshim.c`, the `VDECLCB` macro marshals args + name + format string, `EM_JS local_callback` crosses into JS via Asyncify (which suspends the C stack), the JS dispatcher routes by name to a handler, the handler does its work, and the C stack resumes. To the engine it looks like a synchronous function call that took a few milliseconds.
 
 ## Prerequisites
 
